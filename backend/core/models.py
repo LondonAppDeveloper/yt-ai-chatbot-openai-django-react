@@ -31,6 +31,10 @@ class AiRequest(models.Model):
     )
 
     status = models.CharField(choices=STATUS_OPTIONS, default=PENDING)
-    session = models.ForeignKey(AiChatSession, on_delete=models.CASCADE)
+    session = models.ForeignKey(
+        AiChatSession,
+        on_delete=models.CASCADE,
+        null=True
+    )
     messages = models.JSONField()
     response = models.JSONField(blank=True)
