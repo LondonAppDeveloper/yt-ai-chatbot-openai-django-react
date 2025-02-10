@@ -37,4 +37,4 @@ class AiRequest(models.Model):
         null=True
     )
     messages = models.JSONField()
-    response = models.JSONField(blank=True)
+    response = models.JSONField(null=True, blank=True)
