@@ -34,7 +34,8 @@ class AiRequest(models.Model):
     session = models.ForeignKey(
         AiChatSession,
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        blank=True
     )
     messages = models.JSONField()
     response = models.JSONField(null=True, blank=True)
