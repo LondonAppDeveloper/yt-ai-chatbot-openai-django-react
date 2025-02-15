@@ -59,7 +59,7 @@ class AiRequest(models.Model):
             model="gpt-4o-mini",
             messages=self.messages,
         )
-        self.response = dict(completion)
+        self.response = completion.to_dict()
         self.status = self.COMPLETE
         self.save()
 
