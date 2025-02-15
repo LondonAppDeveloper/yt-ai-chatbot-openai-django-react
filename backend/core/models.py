@@ -1,4 +1,8 @@
+from openai import OpenAI
+
 from django.db import models
+
+from core.tasks import handle_ai_request_job
 
 
 class Recipe(models.Model):
@@ -41,3 +45,26 @@ class AiRequest(models.Model):
     response = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def _queue_job(self):
+        """Add job to queue."""
+        handle_ai_request_job.delay(self.id)
+
+    def handle(self):
+        """Handle request."""
+        self.status = self.RUNNING
+        self.save()
+        client = OpenAI()
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=self.messages,
+        )
+        self.response = dict(completion)
+        self.status = self.COMPLETE
+        self.save()
+
+    def save(self, **kwargs):
+        is_new = self._state.adding
+        super().save(**kwargs)
+        if is_new:
+            self._queue_job()
