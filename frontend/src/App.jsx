@@ -1,15 +1,41 @@
-import React from "react";
+import { useState } from "react";
+
 import "./App.css";
 
 function App() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  const sendMessage = (e) => {
+    if (e.key === "Enter") {
+      setMessage("");
+      setMessages([...messages, { content: message, role: "user" }]);
+    }
+  };
+
   return (
     <div className="wrapper">
       <div className="chat-wrapper">
         <div className="chat-history">
-          <div className="message">Me: Hello</div>
-          <div className="message user">AI: Hi...</div>
+          <div>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`message${message.user ? " user" : ""}`}
+              >
+                {message.role === "user" ? "Me: " : "AI: "}
+                {message.content}
+              </div>
+            ))}
+          </div>
         </div>
-        <input type="text" placeholder="Type a message..." />
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyUp={sendMessage}
+        />
       </div>
     </div>
   );
