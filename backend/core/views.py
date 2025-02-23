@@ -15,10 +15,11 @@ def create_chat_session(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['POST'])
-def send_message(request, sessionId):
-    """Handle sending a session message."""
+@api_view(['GET', 'POST'])
+def get_chat_session(request, sessionId):
+    """Retrieve a chat session and its messages."""
     session = get_object_or_404(AiChatSession, id=sessionId)
+    serializer = AiChatSessionSerializer(session)
 
     if request.method == 'POST':
         message = request.data.get('message')
@@ -27,14 +28,6 @@ def send_message(request, sessionId):
                 {'error': 'Message is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         session.send(message)
-        return Response(session.messages())
 
-
-@api_view(['GET'])
-def get_chat_session(request, sessionId):
-    """Retrieve a chat session and its messages."""
-    session = get_object_or_404(AiChatSession, id=sessionId)
-    serializer = AiChatSessionSerializer(session)
     return Response(serializer.data)
