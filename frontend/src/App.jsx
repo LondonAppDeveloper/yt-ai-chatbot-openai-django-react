@@ -21,7 +21,7 @@ function App() {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`message${message.user ? " user" : ""}`}
+                className={`message${message.role === "user" ? " user" : ""}`}
               >
                 {message.role === "user" ? "Me: " : "AI: "}
                 {message.content}
