@@ -59,7 +59,7 @@ class AiChatSession(models.Model):
         if not last_request:
             AiRequest.objects.create(
                 session=self, messages=self.create_first_message(message))
-        elif last_request.status == AiRequest.COMPLETE:
+        elif last_request.status in [AiRequest.COMPLETE, AiRequest.FAILED]:
             AiRequest.objects.create(
                 session=self,
                 messages=self.messages() + [
