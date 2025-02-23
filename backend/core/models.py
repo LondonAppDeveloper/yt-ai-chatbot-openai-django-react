@@ -55,12 +55,16 @@ class AiRequest(models.Model):
         self.status = self.RUNNING
         self.save()
         client = OpenAI()
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=self.messages,
-        )
-        self.response = completion.to_dict()
-        self.status = self.COMPLETE
+        try:
+            completion = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=self.messages,
+            )
+            self.response = completion.to_dict()
+            self.status = self.COMPLETE
+        except Exception:
+            self.status = self.FAILED
+
         self.save()
 
     def save(self, **kwargs):
