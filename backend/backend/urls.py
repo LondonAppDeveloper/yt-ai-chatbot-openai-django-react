@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import path
 
 from backend.views import hello_world
+from core.views import create_chat_session
 
 urlpatterns = [
     path('api/hello-world/', hello_world),
+    path('api/chat/sessions/', create_chat_session),
     path('admin/', admin.site.urls),
 ]
