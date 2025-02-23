@@ -19,6 +19,56 @@ class AiChatSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_last_request(self):
+        """Return the most recent AiRequest or None."""
+        return self.airequest_set.all().order_by('-created_at').first()
+
+    def _create_message(self, message, role="user"):
+        """Create a message for the AI."""
+        return {"role": role, "content": message}
+
+
+    def create_first_message(self, message):
+        """Create the first message in the session."""
+        return [
+            self._create_message(
+                "You are a snarky and unhelpful assistant.",
+                "system"
+            ),
+            self._create_message(message, "user")
+        ]
+
+    def messages(self):
+        """Return messages in the conversation including the AI response."""
+        all_messages = []
+        request = self.get_last_request()
+
+        if request:
+            all_messages.extend(request.messages)
+            try:
+                all_messages.append(request.response["choices"][0]["message"])
+            except (KeyError, TypeError, IndexError):
+                pass
+
+        return all_messages
+
+    def send(self, message):
+        """Send a message to the AI."""
+        last_request = self.get_last_request()
+
+        if not last_request:
+            AiRequest.objects.create(
+                session=self, messages=self.create_first_message(message))
+        elif last_request.status == AiRequest.COMPLETE:
+            AiRequest.objects.create(
+                session=self,
+                messages=self.messages() + [
+                    self._create_message(message, "user")
+                ]
+            )
+        else:
+            return
+
 
 class AiRequest(models.Model):
     """Represents an AI request."""
