@@ -14,15 +14,13 @@ def create_chat_session(request):
     serializer = AiChatSessionSerializer(session)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@api_view(['GET', 'POST'])
-def session_messages(request, sessionId):
-    """Handle session messages."""
+
+@api_view(['POST'])
+def send_message(request, sessionId):
+    """Handle sending a session message."""
     session = get_object_or_404(AiChatSession, id=sessionId)
 
-    if request.method == 'GET':
-        return Response(session.messages())
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         message = request.data.get('message')
         if not message:
             return Response(
@@ -32,3 +30,11 @@ def session_messages(request, sessionId):
 
         session.send(message)
         return Response(session.messages())
+
+
+@api_view(['GET'])
+def get_chat_session(request, sessionId):
+    """Retrieve a chat session and its messages."""
+    session = get_object_or_404(AiChatSession, id=sessionId)
+    serializer = AiChatSessionSerializer(session)
+    return Response(serializer.data)
