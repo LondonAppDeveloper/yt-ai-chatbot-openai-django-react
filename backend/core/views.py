@@ -16,7 +16,7 @@ def create_chat_session(request):
 
 
 @api_view(['GET', 'POST'])
-def get_chat_session(request, sessionId):
+def chat_session(request, sessionId):
     """Retrieve a chat session and its messages."""
     session = get_object_or_404(AiChatSession, id=sessionId)
     serializer = AiChatSessionSerializer(session)
