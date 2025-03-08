@@ -1,40 +1,84 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { useState, useEffect } from "react";
+
 import "./App.css";
 
 function App() {
-  const [response, setResponse] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
 
-  const updateResponse = async () => {
-    const res = await fetch("http://localhost:8000/api/hello-world/");
-    const data = await res.json();
-    setResponse(data["message"]);
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const intervalId = setInterval(async () => {
+      const response = await fetch(
+        `http://localhost:8000/api/chat/sessions/${sessionId}/`,
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+      setMessages(data.messages);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [sessionId]);
+
+  const postMessage = async (sessionId, message) => {
+    await fetch(`http://localhost:8000/api/chat/sessions/${sessionId}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: message }),
+    });
+  };
+
+  const sendMessage = async (e) => {
+    if (e.key === "Enter") {
+      if (!sessionId) {
+        const response = await fetch(
+          "http://localhost:8000/api/chat/sessions/",
+          {
+            method: "POST",
+          }
+        );
+        const data = await response.json();
+        setSessionId(data.id);
+        postMessage(data.id, message);
+      } else {
+        postMessage(sessionId, message);
+      }
+
+      setMessage("");
+    }
   };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="wrapper">
+      <div className="chat-wrapper">
+        <div className="chat-history">
+          <div>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`message${message.role === "user" ? " user" : ""}`}
+              >
+                {message.role === "user" ? "Me: " : "AI: "}
+                {message.content}
+              </div>
+            ))}
+          </div>
+        </div>
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyUp={sendMessage}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => updateResponse()}>
-          response is: {response}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
 
